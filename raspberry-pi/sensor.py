@@ -1,19 +1,15 @@
-import board
-import busio
-from collections import deque
+import json
 
-from adafruit_ads1x15.ads1115 import ADS1115
-from adafruit_ads1x15.analog_in import AnalogIn
+MQTT_TOPIC = "yard/moisture"
 
 
-i2c = busio.I2C(board.SCL, board.SDA)
-ads = ADS1115(i2c)
+def setup_sensor(client, state):
+    def on_message(client, userdata, msg):
+        data = json.loads(msg.payload.decode())
 
-channel = AnalogIn(ads, 0)
+        state.voltage = data["moisture"]
 
-readings = deque(maxlen=10)
+        print(f"Voltage: {state.voltage}")
 
-
-def get_moisture():
-    readings.append(channel.voltage)
-    return sum(readings) / len(readings)
+    client.on_message = on_message
+    client.subscribe(MQTT_TOPIC)

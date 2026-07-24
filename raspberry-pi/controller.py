@@ -1,5 +1,4 @@
 import time
-from sensor import get_moisture
 from sprinkler import emit_on, emit_off
 
 
@@ -11,8 +10,6 @@ MAX_WATER_TIME = 30 * 60
 
 
 def update(state):
-    state.voltage = get_moisture()
-
     if not state.sprinkler_on:
         if state.voltage < DRY_THRESHOLD:
             emit_on(state)
@@ -20,5 +17,8 @@ def update(state):
     else:
         runtime = time.time() - state.sprinkler_start_time
 
-        if runtime > MAX_WATER_TIME or (runtime > MIN_WATER_TIME and state.voltage > SATURATED_THRESHOLD):
+        if runtime > MAX_WATER_TIME:
+            emit_off(state)
+
+        elif runtime > MIN_WATER_TIME and state.voltage > SATURATED_THRESHOLD:
             emit_off(state)
