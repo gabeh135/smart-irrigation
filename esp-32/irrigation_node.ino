@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <algorithm>
 #include "esp_sleep.h"
 
 const int sensorPin = 17;
@@ -57,15 +58,23 @@ void setup() {
 
   delay(1000);
 
-  int total = 0;
+  int readings[samples];
 
   for (int i = 0; i < samples; i++) {
-    total += analogRead(sensorPin);
+    readings[i] = analogRead(sensorPin);
     delay(50);
   }
 
-  float average = total / (float)samples;
-  float voltage = average * ADC_VREF / ADC_MAX;
+  std::sort(readings, readings + samples);
+
+  float median;
+  if (samples % 2 == 0) {
+    median = (readings[samples / 2 - 1] + readings[samples / 2]) / 2.0;
+  } else {
+    median = readings[samples / 2];
+  }
+
+  float voltage = median * ADC_VREF / ADC_MAX;
 
   digitalWrite(sensorPowerPin, LOW);
 
