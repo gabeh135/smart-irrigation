@@ -8,6 +8,9 @@ const int sensorPowerPin = 18;
 
 const int samples = 20;
 
+const float ADC_MAX = 4095.0;
+const float ADC_VREF = 3.3;
+
 const char* ssid = "WIFI_NAME";
 const char* password = "WIFI_PASSWORD";
 
@@ -45,6 +48,7 @@ void setup() {
   }
 
   float average = total / (float)samples;
+  float voltage = average * ADC_VREF / ADC_MAX;
 
   digitalWrite(sensorPowerPin, LOW);
 
@@ -54,7 +58,7 @@ void setup() {
   connectMQTT();
 
   char payload[50];
-  snprintf(payload, sizeof(payload), "{\"moisture\":%.2f}", average);
+  snprintf(payload, sizeof(payload), "{\"moisture\":%.3f}", voltage);
 
   mqtt.publish("yard/moisture", payload);
 
